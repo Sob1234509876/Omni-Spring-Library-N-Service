@@ -1,0 +1,17 @@
+rootProject.name = 'osl'
+final var PROJECT_DIR = 'projects'
+
+logger.info('Scanning projects...')
+
+var projects = new File(rootDir, PROJECT_DIR).listFiles()
+logger.info('Projects found: {}', projects.toString())
+
+for (var prj : projects) {
+    var name = prj.getName()
+    var modules = prj.list()
+
+    for (var mod : modules)
+        include "projects:${name}:${mod}"
+}
+
+logger.info('Finish including projects')
