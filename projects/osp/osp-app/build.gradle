@@ -25,7 +25,6 @@ repositories {
 }
 
 dependencies {
-    implementation project(':projects:osp:osp-app')
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
@@ -37,7 +36,7 @@ dependencies {
 }
 
 springBoot {
-    mainClass = 'top.sob.osp.server.Main'
+    mainClass = 'top.sob.osp.lib.Main'
 }
 
 tasks.named("test") {

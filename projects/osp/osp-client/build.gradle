@@ -37,7 +37,7 @@ dependencies {
 }
 
 springBoot {
-    mainClass = 'top.sob.osp.server.Main'
+    mainClass = 'top.sob.osp.client.Main'
 }
 
 tasks.named("test") {

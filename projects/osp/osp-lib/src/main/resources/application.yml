@@ -1,5 +1,0 @@
-spring:
-  main:
-    web-application-type: servlet
-server:
-  address: 0.0.0.0
