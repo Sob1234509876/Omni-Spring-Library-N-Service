@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 
+@SuppressWarnings("unused")
 @Getter
 @NoArgsConstructor
 @RequiredArgsConstructor

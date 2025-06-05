@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Repository;
 import top.sob.osl.lib.dao.mongo.AbstractMongoCrudRepository;
 
+@SuppressWarnings("unused")
 @EqualsAndHashCode(callSuper = true)
 @Repository
 @Data

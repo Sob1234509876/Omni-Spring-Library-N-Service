@@ -6,6 +6,7 @@ import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Repository;
 import top.sob.osl.lib.dao.mongo.AbstractMongoCrudRepository;
 
+@SuppressWarnings("unused")
 @Repository
 public class MongoCsrfTokenDao extends AbstractMongoCrudRepository<CsrfToken, String> {
     public MongoCsrfTokenDao() {
