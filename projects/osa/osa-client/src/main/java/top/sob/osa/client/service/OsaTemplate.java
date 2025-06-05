@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+@SuppressWarnings("unused")
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
