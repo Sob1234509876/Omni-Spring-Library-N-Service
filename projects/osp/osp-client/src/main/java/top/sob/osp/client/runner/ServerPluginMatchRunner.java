@@ -10,7 +10,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import top.sob.osp.app.annotation.Plugin;
+import top.sob.osp.plf.annotation.Plugin;
 import top.sob.osp.client.internal.Matches;
 
 import java.util.Map;

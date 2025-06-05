@@ -8,7 +8,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
-import top.sob.osp.app.annotation.Plugin;
+import top.sob.osp.plf.annotation.Plugin;
 
 import java.util.Map;
 

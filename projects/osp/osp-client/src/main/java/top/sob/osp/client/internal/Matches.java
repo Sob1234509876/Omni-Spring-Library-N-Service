@@ -1,6 +1,6 @@
 package top.sob.osp.client.internal;
 
-import top.sob.osp.app.annotation.Plugin;
+import top.sob.osp.plf.annotation.Plugin;
 
 import java.util.Map;
 

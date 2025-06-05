@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':projects:osp:osp-app')
+    implementation project(':projects:osp:osp-plf')
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
