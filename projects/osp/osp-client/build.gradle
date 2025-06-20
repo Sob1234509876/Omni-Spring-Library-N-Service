@@ -1,4 +1,5 @@
 //file:noinspection GroovyAssignabilityCheck
+//file:noinspection GrUnresolvedAccess
 plugins {
     id 'java'
     id 'maven-publish'
@@ -7,7 +8,7 @@ plugins {
 }
 
 group = 'top.sob'
-version = '1.0a'
+version = '1.1a'
 
 java {
     toolchain {
@@ -22,27 +23,20 @@ configurations {
 }
 
 repositories {
+    maven { url = uri('https://maven.aliyun.com/repository/central') }
     mavenCentral()
 }
 
 dependencies {
-    implementation project(':projects:osp:osp-plf')
+    implementation project(':projects:osp:osp-platform'), project(':projects:osr:osr-library')
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-springBoot {
-    mainClass = 'top.sob.osp.client.Main'
-}
-
-tasks.named("test") {
-    useJUnitPlatform()
 }
 
 publishing {

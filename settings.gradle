@@ -1,9 +1,13 @@
 rootProject.name = 'osl'
-final var PROJECT_DIR = 'projects'
+
+ext {
+    prjDir = 'projects'
+}
 
 logger.info('Scanning projects...')
 
-var projects = new File(rootDir, PROJECT_DIR).listFiles()
+//noinspection GrUnresolvedAccess, GroovyAssignabilityCheck
+var projects = new File(rootDir, prjDir).listFiles()
 logger.info('Projects found: {}', projects.toString())
 
 for (var prj : projects) {

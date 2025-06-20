@@ -28,10 +28,9 @@ repositories {
 }
 
 dependencies {
-    implementation project(':projects:osp:osp-platform')
+    implementation project(':projects:osp:osp-platform'), project(':projects:osr:osr-library')
 
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'top.sob'
-version = '1.0a'
+version = '1.1a'
 
 java {
     toolchain {
@@ -28,10 +28,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':projects:osp:osp-platform')
-
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
