@@ -622,44 +622,20 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
+package io.github.sob1234509876.osa.client;
 
-group = 'io.github.sob1234509876.osa'
-version = '2.0a'
-description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
+import io.github.sob1234509876.osa.client.annotation.EnableOsaClient;
+import io.github.sob1234509876.osa.server.annotation.EnableOsaServer;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+@Slf4j
+@SpringBootApplication
+@EnableOsaServer
+@EnableOsaClient
+public class Main {
+    public static void main(String[] args) {
+        SpringApplication.run(Main.class, args);
     }
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-test {
-    useJUnitPlatform()
 }

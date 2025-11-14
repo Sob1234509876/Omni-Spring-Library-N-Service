@@ -622,44 +622,153 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
+package io.github.sob1234509876.osa.server.dao.ftp;
 
-group = 'io.github.sob1234509876.osa'
-version = '2.0a'
-description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
+import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
+import io.github.sob1234509876.osa.server.api.Avatar;
+import io.github.sob1234509876.osa.server.api.AvatarDao;
+import io.github.sob1234509876.osa.server.service.OsaServerUtilityService;
+import io.github.sob1234509876.osftp.dao.ftp.FtpTemplate;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.stereotype.Repository;
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Optional;
+
+@OsaServerSpringBootDoNotTouch
+@Slf4j
+@Data
+@NoArgsConstructor
+@RequiredArgsConstructor
+@Repository
+public class OsaServerFtpAvatarDao implements AvatarDao, InitializingBean {
+
+    @NonNull
+    private FtpTemplate ftpTemplate;
+
+    @NonNull
+    private OsaServerUtilityService osaServerUtilityService;
+
+    @Override
+    public <S extends Avatar> @NonNull S save(@NonNull S entity) {
+        var path = osaServerUtilityService.getAvatarFtpPath(entity.getUsername());
+
+        ftpTemplate.writeFile(path, entity.getImage());
+
+        return entity;
     }
-}
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+    @Override
+    public <S extends Avatar> @NonNull Iterable<S> saveAll(@NonNull Iterable<S> entities) {
+        for (var e : entities)
+            save(e);
+
+        return entities;
     }
-}
 
-repositories {
-    mavenCentral()
-}
+    @Override
+    public @NonNull Optional<Avatar> findById(@NonNull String s) {
+        if (!existsById(s))
+            return Optional.empty();
 
-dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+        var path = osaServerUtilityService.getAvatarFtpPath(s);
+        var tmp = new Avatar(s);
+        tmp.setImage(ftpTemplate.readFile(path));
 
-test {
-    useJUnitPlatform()
+        return Optional.of(tmp);
+    }
+
+    @Override
+    public boolean existsById(@NonNull String s) {
+        var path = osaServerUtilityService.getAvatarFtpPath(s);
+        return ftpTemplate.getFile(path) != null;
+    }
+
+    @Override
+    public @NonNull Iterable<Avatar> findAll() {
+        var path = osaServerUtilityService.getOsaServerPropertyComponent()
+                .getAvatarFtpPathPrefix();
+        var res = new LinkedList<Avatar>();
+
+        for (var f : ftpTemplate.listFiles(path)) {
+            var p = osaServerUtilityService.getAvatarFtpPath(f.getName());
+            var tmp = new Avatar(f.getName());
+            tmp.setImage(ftpTemplate.readFile(p));
+
+            res.add(tmp);
+        }
+
+        return Collections.unmodifiableList(res);
+    }
+
+    @Override
+    public @NonNull Iterable<Avatar> findAllById(@NonNull Iterable<String> strings) {
+        var res = new LinkedList<Avatar>();
+
+        for (var s : strings) {
+            var r = findById(s);
+
+            if (r.isEmpty())
+                return Collections.emptyList();
+
+            res.add(r.get());
+        }
+
+        return Collections.unmodifiableList(res);
+    }
+
+    @Override
+    public long count() {
+        var path = osaServerUtilityService.getOsaServerPropertyComponent()
+                .getAvatarFtpPathPrefix();
+        return ftpTemplate.listFiles(path).length;
+    }
+
+    @Override
+    public void deleteById(@NonNull String s) {
+        var path = osaServerUtilityService.getAvatarFtpPath(s);
+
+        ftpTemplate.deleteFile(path);
+    }
+
+    @Override
+    public void delete(@NonNull Avatar entity) {
+        deleteById(entity.getUsername());
+    }
+
+    @Override
+    public void deleteAllById(@NonNull Iterable<? extends String> strings) {
+        for (var s : strings)
+            deleteById(s);
+    }
+
+    @Override
+    public void deleteAll(@NonNull Iterable<? extends Avatar> entities) {
+        for (var e : entities)
+            delete(e);
+    }
+
+    @Override
+    public void deleteAll() {
+        var path = osaServerUtilityService.getOsaServerPropertyComponent()
+                .getAvatarFtpPathPrefix();
+        var files = ftpTemplate.listFiles(path);
+
+        for (var f : files) {
+            var p = osaServerUtilityService.getAvatarFtpPath(f.getName());
+            ftpTemplate.deleteFile(p);
+        }
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        ftpTemplate.makeDirectories(osaServerUtilityService.getOsaServerPropertyComponent()
+                .getAvatarFtpPathPrefix());
+    }
 }

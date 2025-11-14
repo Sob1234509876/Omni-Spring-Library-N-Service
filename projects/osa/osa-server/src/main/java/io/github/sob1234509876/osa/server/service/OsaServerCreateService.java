@@ -622,44 +622,80 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
+package io.github.sob1234509876.osa.server.service;
 
-group = 'io.github.sob1234509876.osa'
-version = '2.0a'
-description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
+import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
+import io.github.sob1234509876.osa.server.api.Avatar;
+import io.github.sob1234509876.osa.server.api.AvatarDao;
+import io.github.sob1234509876.osa.server.api.User;
+import io.github.sob1234509876.osa.server.api.UserDao;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+import java.io.IOException;
+
+@OsaServerSpringBootDoNotTouch
+@Slf4j
+@Data
+@NoArgsConstructor
+@RequiredArgsConstructor
+@Service
+public class OsaServerCreateService {
+
+    @NonNull
+    private UserDao userDao;
+
+    @NonNull
+    private AvatarDao avatarDao;
+
+    @NonNull
+    private OsaServerUtilityService osaServerUtilityService;
+
+    @NonNull
+    public ResponseEntity<Void> register(@NonNull User user) {
+        if (user.isUnsafe())
+            return ResponseEntity.badRequest()
+                    .build();
+
+        if (userDao.findById(user.getUsername()).isPresent())
+            return ResponseEntity.badRequest()
+                    .build();
+
+        osaServerUtilityService.toDefaultSafeUser(user);
+        userDao.save(user);
+
+        return ResponseEntity.ok(null);
     }
-}
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+    @NonNull
+    public ResponseEntity<Void> uploadAvatar(@NonNull UserDetails user, @NonNull MultipartFile avatar) throws IOException {
+        if (avatarDao.existsById(user.getUsername()))
+            return ResponseEntity.badRequest()
+                    .build();
+
+        if (avatar.getContentType() == null)
+            return ResponseEntity.badRequest()
+                    .build();
+
+        // You actually could upload a txt file and state this is an image.
+        if (!MediaType.parseMediaType(avatar.getContentType()).isCompatibleWith(MediaType.IMAGE_PNG))
+            return ResponseEntity.badRequest()
+                    .build();
+
+        var tmp = new Avatar(user.getUsername());
+        tmp.setImage(avatar.getBytes());
+
+        avatarDao.save(tmp);
+
+        return ResponseEntity.ok(null);
     }
-}
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-test {
-    useJUnitPlatform()
 }

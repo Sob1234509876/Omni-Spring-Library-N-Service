@@ -622,44 +622,116 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
+package io.github.sob1234509876.osa.server.dao.mongo;
 
-group = 'io.github.sob1234509876.osa'
-version = '2.0a'
-description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
+import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
+import io.github.sob1234509876.osa.server.api.User;
+import io.github.sob1234509876.osa.server.api.UserDao;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Repository;
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Optional;
+
+@OsaServerSpringBootDoNotTouch
+@Slf4j
+@Data
+@NoArgsConstructor
+@RequiredArgsConstructor
+@Repository
+public class OsaServerMongoUserDao implements UserDao {
+    @NonNull
+    private MongoTemplate mongoTemplate;
+
+    @Override
+    public <S extends UserDetails> @NonNull S save(@NonNull S entity) {
+        return mongoTemplate.save(entity);
     }
-}
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+    @Override
+    public <S extends UserDetails> @NonNull Iterable<S> saveAll(@NonNull Iterable<S> entities) {
+        for (var s : entities)
+            save(s);
+
+        return entities;
     }
-}
 
-repositories {
-    mavenCentral()
-}
+    @Override
+    public @NonNull Optional<UserDetails> findById(@NonNull String s) {
+        return Optional.ofNullable(mongoTemplate.findById(s, User.class));
+    }
 
-dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+    @Override
+    public boolean existsById(@NonNull String s) {
+        var query = Criteria.where(User.ID_FIELD)
+                .is(s);
 
-test {
-    useJUnitPlatform()
+        return mongoTemplate.exists(new Query(query), User.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public @NonNull Iterable<UserDetails> findAll() {
+        return (Iterable<UserDetails>) (Iterable<?>) mongoTemplate.findAll(User.class);
+    }
+
+    @Override
+    public @NonNull Iterable<UserDetails> findAllById(@NonNull Iterable<String> strings) {
+        var res = new LinkedList<UserDetails>();
+
+        for (var s : strings) {
+            var r = findById(s);
+
+            if (r.isEmpty())
+                return Collections.emptyList();
+
+            res.add(r.get());
+        }
+
+        return Collections.unmodifiableList(res);
+    }
+
+    @Override
+    public long count() {
+        return mongoTemplate.count(new Query(), User.class);
+    }
+
+    @Override
+    public void deleteById(@NonNull String s) {
+        var query = Criteria.where(User.ID_FIELD)
+                .is(s);
+
+        mongoTemplate.remove(new Query(query), User.class);
+    }
+
+    @Override
+    public void delete(@NonNull UserDetails entity) {
+        mongoTemplate.remove(entity);
+    }
+
+    @Override
+    public void deleteAllById(@NonNull Iterable<? extends String> strings) {
+        for (var s : strings)
+            deleteById(s);
+    }
+
+    @Override
+    public void deleteAll(@NonNull Iterable<? extends UserDetails> entities) {
+        for (var e : entities)
+            delete(e);
+    }
+
+    @Override
+    public void deleteAll() {
+        mongoTemplate.remove(new Query(), User.class);
+    }
 }

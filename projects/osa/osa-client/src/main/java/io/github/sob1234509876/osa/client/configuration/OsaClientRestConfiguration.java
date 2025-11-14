@@ -622,44 +622,31 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
+package io.github.sob1234509876.osa.client.configuration;
 
-group = 'io.github.sob1234509876.osa'
-version = '2.0a'
-description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.JettyClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+@Configuration
+public class OsaClientRestConfiguration {
+
+    @Value("${rest.username:}")
+    private String username;
+
+    @Value("${rest.password:}")
+    private String password;
+
+    @ConditionalOnMissingBean(RestTemplate.class)
+    @Bean
+    public RestTemplate defaultRestTemplate(RestTemplateBuilder restTemplateBuilder) {
+        restTemplateBuilder.requestFactory(JettyClientHttpRequestFactory.class);
+        if (!username.isBlank() && !password.isBlank())
+            restTemplateBuilder.basicAuthentication(username, password);
+        return restTemplateBuilder.build();
     }
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-test {
-    useJUnitPlatform()
 }

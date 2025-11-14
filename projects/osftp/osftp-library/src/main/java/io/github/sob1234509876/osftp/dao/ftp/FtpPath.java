@@ -622,44 +622,59 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
+package io.github.sob1234509876.osftp.dao.ftp;
 
-group = 'io.github.sob1234509876.osa'
-version = '2.0a'
-description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@RequiredArgsConstructor
+public class FtpPath {
+
+    public static final char SEPARATOR = '/';
+
+    @NonNull
+    private List<String> dir;
+
+    public FtpPath(@NonNull String dir) {
+        setDir(new LinkedList<>());
+        if (!dir.isEmpty())
+            Collections.addAll(getDir(), stripSeparators(dir).split(String.valueOf(SEPARATOR)));
     }
-}
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+    public String toString() {
+        var sb = new StringBuilder();
+        for (var dir : dir)
+            sb.append('/')
+                    .append(dir);
+        return sb.toString();
     }
-}
 
-repositories {
-    mavenCentral()
-}
+    public void toParent() {
+        var dir = getDir();
+        dir.remove(dir.size() - 1);
+    }
 
-dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+    @SuppressWarnings("unused")
+    public void toChild(String... child) {
+        Collections.addAll(getDir(), child);
+    }
 
-test {
-    useJUnitPlatform()
+    @NonNull
+    private String stripSeparators(@NonNull String path) {
+        var start = 0;
+        var end = path.length();
+        while (start < path.length() && path.charAt(start) == SEPARATOR)
+            start++;
+        while (end > 0 && path.charAt(end - 1) == SEPARATOR)
+            end--;
+        return path.substring(start, end);
+    }
 }

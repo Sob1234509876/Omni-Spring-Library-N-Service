@@ -622,44 +622,87 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
+package io.github.sob1234509876.osa.server.service;
 
-group = 'io.github.sob1234509876.osa'
-version = '2.0a'
-description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
+import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
+import io.github.sob1234509876.osa.server.api.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+import java.io.IOException;
+
+@OsaServerSpringBootDoNotTouch
+@Slf4j
+@Data
+@NoArgsConstructor
+@RequiredArgsConstructor
+@Service
+public class OsaServerUpdateService {
+
+    @NonNull
+    private UserDao userDao;
+
+    @NonNull
+    private AvatarDao avatarDao;
+
+    @NonNull
+    private OsaServerUtilityService osaServerUtilityService;
+
+    @NonNull
+    private PasswordEncoder passwordEncoder;
+
+    @NonNull
+    public ResponseEntity<Void> updateProfile(@NonNull UserDetails user, @NonNull StringUserSecurePair nUser) {
+        log.info("Tmp\n{}", nUser);
+
+        if (nUser.getBody()
+                .isUnsafe())
+            return ResponseEntity.badRequest()
+                    .build();
+
+        if (!passwordEncoder.matches(nUser.getPassword(), user.getPassword()))
+            return ResponseEntity.status(401)
+                    .build();
+
+        osaServerUtilityService.toSafeUser(new User(user), nUser.getBody());
+
+        // There are probably cocurrent problems, IDK how to fix
+        userDao.deleteById(user.getUsername());
+        userDao.save(nUser.getBody());
+
+        return ResponseEntity.ok(null);
     }
-}
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+    // Copied from OsaServerCreateService, added some tweaks
+    @NonNull
+    public ResponseEntity<Void> updateAvatar(@NonNull UserDetails user, @NonNull MultipartFile avatar) throws IOException {
+        if (!avatarDao.existsById(user.getUsername()))
+            return ResponseEntity.notFound()
+                    .build();
+
+        if (avatar.getContentType() == null)
+            return ResponseEntity.badRequest()
+                    .build();
+
+        if (!avatar.getContentType()
+                .startsWith("image"))
+            return ResponseEntity.badRequest()
+                    .build();
+
+        var tmp = new Avatar(user.getUsername());
+        tmp.setImage(avatar.getBytes());
+
+        avatarDao.save(tmp);
+
+        return ResponseEntity.ok(null);
     }
-}
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-test {
-    useJUnitPlatform()
 }

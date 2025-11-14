@@ -622,44 +622,40 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
+package io.github.sob1234509876.osftp.dao.ftp;
 
-group = 'io.github.sob1234509876.osa'
-version = '2.0a'
-description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
+import lombok.NonNull;
+import org.apache.commons.net.ftp.FTPFile;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.lang.Nullable;
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
+import java.io.InputStream;
+import java.io.OutputStream;
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
+public interface FtpOperations extends InitializingBean, DisposableBean {
+    void makeDirectories(@NonNull String path);
 
-repositories {
-    mavenCentral()
-}
+    void createFile(@NonNull String path);
 
-dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+    byte @NonNull [] readFile(@NonNull String path);
 
-test {
-    useJUnitPlatform()
+    void readFile(@NonNull String path, @NonNull OutputStream os);
+
+    @NonNull
+    FTPFile @NonNull [] listFiles(@NonNull String path);
+
+    void writeFile(@NonNull String path, byte @NonNull [] data);
+
+    void writeFile(@NonNull String path, @NonNull InputStream is);
+
+    @SuppressWarnings("unused")
+    void appendFile(@NonNull String path, byte @NonNull [] data);
+
+    void appendFile(@NonNull String path, @NonNull InputStream is);
+
+    void deleteFile(@NonNull String path);
+
+    @Nullable
+    FTPFile getFile(@NonNull String path);
 }

@@ -622,44 +622,47 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
+package io.github.sob1234509876.osa.server.controller;
 
-group = 'io.github.sob1234509876.osa'
-version = '2.0a'
-description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
+import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
+import io.github.sob1234509876.osa.server.service.OsaServerDeleteService;
+import jakarta.annotation.PostConstruct;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RestController;
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+@OsaServerSpringBootDoNotTouch
+@Slf4j
+@Data
+@NoArgsConstructor
+@RequiredArgsConstructor
+@RestController
+public class OsaServerDeleteController {
+
+    @NonNull
+    private OsaServerDeleteService osaServerDeleteService;
+
+    @DeleteMapping("/private/profile/delete")
+    public ResponseEntity<Void> deleteProfile(@AuthenticationPrincipal UserDetails user, @ModelAttribute("password") @NonNull String password) {
+        return osaServerDeleteService.deleteProfile(user, password);
     }
-}
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+    @DeleteMapping("/private/avatar/delete")
+    public ResponseEntity<Void> deleteAvatar(@AuthenticationPrincipal UserDetails user) {
+        return osaServerDeleteService.deleteAvatar(user);
     }
-}
 
-repositories {
-    mavenCentral()
-}
+    @PostConstruct
+    public void logCreation() {
+        log.info("Created {}", this);
+    }
 
-dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-test {
-    useJUnitPlatform()
 }

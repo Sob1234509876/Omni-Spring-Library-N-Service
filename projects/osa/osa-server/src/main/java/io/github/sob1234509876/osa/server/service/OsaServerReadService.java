@@ -622,44 +622,85 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
+package io.github.sob1234509876.osa.server.service;
 
-group = 'io.github.sob1234509876.osa'
-version = '2.0a'
-description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
+import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
+import io.github.sob1234509876.osa.server.api.AvatarDao;
+import io.github.sob1234509876.osa.server.api.User;
+import io.github.sob1234509876.osa.server.api.UserDao;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+@OsaServerSpringBootDoNotTouch
+@Slf4j
+@Data
+@NoArgsConstructor
+@RequiredArgsConstructor
+@Service
+public class OsaServerReadService {
+
+    @NonNull
+    private UserDao userDao;
+
+    @NonNull
+    private AvatarDao avatarDao;
+
+    @NonNull
+    private OsaServerUtilityService osaServerUtilityService;
+
+    @NonNull
+    public ResponseEntity<@NonNull User> getProfile(@NonNull String username) {
+        var res = userDao.findById(username);
+
+        if (res.isEmpty())
+            return ResponseEntity.notFound()
+                    .build();
+
+        var user = res.get();
+        var tmp = new User(user);
+
+        osaServerUtilityService.toSecureUser(tmp);
+
+        return ResponseEntity.ok(tmp);
     }
-}
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+    @NonNull
+    public ResponseEntity<@NonNull Resource> getAvatar(@NonNull String username) {
+        if (!avatarDao.existsById(username))
+            return ResponseEntity.notFound()
+                    .build();
+
+        var res = avatarDao.findById(username);
+
+        if (res.isEmpty())
+            return ResponseEntity.notFound()
+                    .build();
+
+        var img = new ByteArrayResource(res.get()
+                .getImage());
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .body(img);
     }
-}
 
-repositories {
-    mavenCentral()
-}
+    @NonNull
+    public ResponseEntity<@NonNull User> getProfile(@NonNull UserDetails user) {
+        return getProfile(user.getUsername());
+    }
 
-dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+    @NonNull
+    public ResponseEntity<@NonNull Resource> getAvatar(@NonNull UserDetails user) {
+        return getAvatar(user.getUsername());
+    }
 
-test {
-    useJUnitPlatform()
 }

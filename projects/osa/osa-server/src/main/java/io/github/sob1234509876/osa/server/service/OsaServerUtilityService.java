@@ -622,44 +622,76 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
+package io.github.sob1234509876.osa.server.service;
 
-group = 'io.github.sob1234509876.osa'
-version = '2.0a'
-description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
+import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
+import io.github.sob1234509876.osa.server.api.User;
+import io.github.sob1234509876.osa.server.component.OsaServerPropertyComponent;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+import java.util.List;
+import java.util.WeakHashMap;
+
+@OsaServerSpringBootDoNotTouch
+@Slf4j
+@Data
+@NoArgsConstructor
+@RequiredArgsConstructor
+@Service
+public class OsaServerUtilityService {
+
+    @NonNull
+    private OsaServerPropertyComponent osaServerPropertyComponent;
+
+    @NonNull
+    private PasswordEncoder passwordEncoder;
+
+    private WeakHashMap<String, String> avatarFtpPathCache = new WeakHashMap<>();
+
+    public void toSafeUser(@NonNull User original, @NonNull User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        user.setAuthorities(original.getAuthorities());
+        user.setAccountNonLocked(original.isAccountNonLocked());
+        user.setAccountNonExpired(original.isAccountNonExpired());
+        user.setCredentialsNonExpired(original.isCredentialsNonExpired());
+        user.setEnabled(original.isEnabled());
+        user.setCreationTimeStamp(original.getCreationTimeStamp());
     }
-}
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+    public void toDefaultSafeUser(@NonNull User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        user.setAuthorities(osaServerPropertyComponent.getDefaultGrantedAuthorities());
+        user.setAccountNonLocked(true);
+        user.setAccountNonExpired(true);
+        user.setCredentialsNonExpired(true);
+        user.setEnabled(true);
+        user.setCreationTimeStamp(System.currentTimeMillis());
     }
-}
 
-repositories {
-    mavenCentral()
-}
+    public void toSecureUser(@NonNull User user) {
+        user.setPassword(String.valueOf(Character.SPACE_SEPARATOR)); // Actually sets to the string "21"
+        user.setAuthorities(List.of());
+    }
 
-dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+    // Random use of cache, I think string concat operations are inefficient, so I added this.
+    public String getAvatarFtpPath(@NonNull String username) {
+        if (avatarFtpPathCache.containsKey(username))
+            return avatarFtpPathCache.get(username);
 
-test {
-    useJUnitPlatform()
+        var tmp = newAvatarFtpPath(username);
+        avatarFtpPathCache.put(username, tmp);
+        return tmp;
+    }
+
+    public String newAvatarFtpPath(@NonNull String username) {
+        return osaServerPropertyComponent.getAvatarFtpPathPrefix() + "/" + username;
+    }
 }

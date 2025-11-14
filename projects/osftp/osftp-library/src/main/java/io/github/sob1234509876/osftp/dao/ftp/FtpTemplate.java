@@ -622,44 +622,140 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
+package io.github.sob1234509876.osftp.dao.ftp;
 
-group = 'io.github.sob1234509876.osa'
-version = '2.0a'
-description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
+import io.github.sob1234509876.osftp.lbi.OsftpLibraryProperty;
+import lombok.*;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
+import org.springframework.lang.Nullable;
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+// Extremely inefficient
+@Slf4j
+@Data
+@NoArgsConstructor
+@RequiredArgsConstructor
+public class FtpTemplate implements FtpOperations {
+
+    @NonNull
+    private FTPClient client;
+
+    @NonNull
+    private OsftpLibraryProperty config;
+
+    {
+        log.info("Constructed {}", this);
     }
-}
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+    // Make sure to make directories before invoking some methods, it is best to invoke this method at the start of FTP
+    // service bean initializing phase (I guess, because it is quite inefficient, O(n) operation, not O(1)).
+    @SneakyThrows
+    @Override
+    public void makeDirectories(@NonNull String path) {
+        client.changeWorkingDirectory("/");
+        for (var s : new FtpPath(path).getDir()) {
+            client.makeDirectory(s);
+            client.changeWorkingDirectory(s);
+        }
     }
-}
 
-repositories {
-    mavenCentral()
-}
+    @SneakyThrows
+    @Override
+    public void createFile(@NonNull String path) {
+        client.changeWorkingDirectory("/");
+        client.storeFile(path, InputStream.nullInputStream());
+    }
 
-dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+    @SneakyThrows
+    @Override
+    public byte @NonNull [] readFile(@NonNull String path) {
+        var buffer = new ByteArrayOutputStream();
+        readFile(path, buffer);
+        return buffer.toByteArray();
+    }
 
-test {
-    useJUnitPlatform()
+    @SneakyThrows
+    @Override
+    public void readFile(@NonNull String path, @NonNull OutputStream os) {
+        client.changeWorkingDirectory("/");
+        client.retrieveFile(path, os);
+    }
+
+    @SneakyThrows
+    @Override
+    public @NonNull FTPFile @NonNull [] listFiles(@NonNull String path) {
+        client.changeWorkingDirectory("/");
+        return client.listFiles(path);
+    }
+
+    @SneakyThrows
+    @Override
+    public void writeFile(@NonNull String path, byte @NonNull [] data) {
+        writeFile(path, new ByteArrayInputStream(data));
+    }
+
+    @SneakyThrows
+    @Override
+    public void writeFile(@NonNull String path, @NonNull InputStream is) {
+        client.changeWorkingDirectory("/");
+        client.storeFile(path, is);
+    }
+
+    @SneakyThrows
+    @Override
+    public void appendFile(@NonNull String path, byte @NonNull [] data) {
+        appendFile(path, new ByteArrayInputStream(data));
+    }
+
+    @SneakyThrows
+    @Override
+    public void appendFile(@NonNull String path, @NonNull InputStream is) {
+        client.changeWorkingDirectory("/");
+        client.appendFile(path, is);
+    }
+
+    @SneakyThrows
+    @Override
+    public void deleteFile(@NonNull String path) {
+        client.changeWorkingDirectory("/");
+        client.deleteFile(path);
+    }
+
+    @Nullable
+    @Override
+    public FTPFile getFile(@NonNull String path) {
+        var fp = new FtpPath(path);
+        var dir = fp.getDir();
+        if (dir.isEmpty())
+            return null;
+        var name = dir.get(dir.size() - 1);
+        fp.toParent();
+        for (var f : listFiles(fp.toString()))
+            if (f.getName().equals(name))
+                return f;
+        return null;
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        client.logout();
+        client.disconnect();
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        if (config.isPassiveMode())
+            client.enterLocalPassiveMode();
+        client.setDefaultTimeout(config.getTimeout());
+        client.connect(config.getHost(), config.getPort());
+        client.login(config.getUsername(), config.getPassword());
+        client.setFileType(FTP.BINARY_FILE_TYPE);
+    }
 }

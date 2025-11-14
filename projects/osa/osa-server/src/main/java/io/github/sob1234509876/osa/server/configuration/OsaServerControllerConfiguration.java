@@ -622,44 +622,61 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
+package io.github.sob1234509876.osa.server.configuration;
 
-group = 'io.github.sob1234509876.osa'
-version = '2.0a'
-description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
+import io.github.sob1234509876.osa.server.controller.OsaServerCreateController;
+import io.github.sob1234509876.osa.server.controller.OsaServerDeleteController;
+import io.github.sob1234509876.osa.server.controller.OsaServerReadController;
+import io.github.sob1234509876.osa.server.controller.OsaServerUpdateController;
+import io.github.sob1234509876.osa.server.converter.StringToGrantedAuthorityConverter;
+import io.github.sob1234509876.osa.server.service.OsaServerCreateService;
+import io.github.sob1234509876.osa.server.service.OsaServerDeleteService;
+import io.github.sob1234509876.osa.server.service.OsaServerReadService;
+import io.github.sob1234509876.osa.server.service.OsaServerUpdateService;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.format.FormatterRegistry;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+@Slf4j
+@Data
+@NoArgsConstructor
+@Configuration
+@Import(OsaServerServiceConfiguration.class)
+public class OsaServerControllerConfiguration implements WebMvcConfigurer {
+
+    @Bean
+    @NonNull
+    public OsaServerCreateController osaServerCreateController(@NonNull OsaServerCreateService osaServerCreateService) {
+        return new OsaServerCreateController(osaServerCreateService);
     }
-}
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+    @Bean
+    @NonNull
+    public OsaServerReadController osaServerReadController(@NonNull OsaServerReadService osaServerReadService) {
+        return new OsaServerReadController(osaServerReadService);
     }
-}
 
-repositories {
-    mavenCentral()
-}
+    @Bean
+    @NonNull
+    public OsaServerUpdateController osaServerUpdateController(@NonNull OsaServerUpdateService osaServerUpdateService) {
+        return new OsaServerUpdateController(osaServerUpdateService);
+    }
 
-dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+    @Bean
+    @NonNull
+    public OsaServerDeleteController osaServerDeleteController(@NonNull OsaServerDeleteService osaServerDeleteService) {
+        return new OsaServerDeleteController(osaServerDeleteService);
+    }
 
-test {
-    useJUnitPlatform()
+    @Override
+    public void addFormatters(@NonNull FormatterRegistry registry) {
+        registry.addConverter((StringToGrantedAuthorityConverter) (SimpleGrantedAuthority::new));
+    }
 }

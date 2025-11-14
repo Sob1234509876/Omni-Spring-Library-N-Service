@@ -1,21 +1,6 @@
 rootProject.name = 'osl'
 
-ext {
-    prjDir = 'projects'
-}
+include 'projects:osa:osa-server'
+include 'projects:osa:osa-client'
 
-logger.info('Scanning projects...')
-
-//noinspection GrUnresolvedAccess, GroovyAssignabilityCheck
-var projects = new File(rootDir, prjDir).listFiles()
-logger.info('Projects found: {}', projects.toString())
-
-for (var prj : projects) {
-    var name = prj.getName()
-    var modules = prj.list()
-
-    for (var mod : modules)
-        include "projects:${name}:${mod}"
-}
-
-logger.info('Finish including projects')
+include 'projects:osftp:osftp-library'

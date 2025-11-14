@@ -622,44 +622,26 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
+package io.github.sob1234509876.osftp;
 
-group = 'io.github.sob1234509876.osa'
-version = '2.0a'
-description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
+import io.github.sob1234509876.osftp.dao.ftp.FtpTemplate;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+import java.nio.charset.StandardCharsets;
+
+@Slf4j
+@SpringBootApplication
+public class Main {
+    public static void main(String[] args) {
+        var context = SpringApplication.run(Main.class, args);
+        var ftp = context.getBean(FtpTemplate.class);
+
+        ftp.createFile("/test/hello world.txt");
+        ftp.writeFile("/test/hello world.txt", "Hello world!".getBytes(StandardCharsets.UTF_8));
+        log.info(new String(ftp.readFile("/test/hello world.txt"), StandardCharsets.UTF_8));
+        ftp.deleteFile("/test/hello world.txt");
+        ftp.deleteFile("/test");
     }
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-test {
-    useJUnitPlatform()
 }

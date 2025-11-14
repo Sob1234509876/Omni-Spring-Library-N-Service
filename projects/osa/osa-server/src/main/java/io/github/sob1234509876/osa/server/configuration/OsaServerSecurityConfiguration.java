@@ -622,44 +622,78 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
+package io.github.sob1234509876.osa.server.configuration;
 
-group = 'io.github.sob1234509876.osa'
-version = '2.0a'
-description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
+import io.github.sob1234509876.osa.server.api.UserDao;
+import io.github.sob1234509876.osa.server.security.DaoUserDetailsService;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+@Slf4j
+@Data
+@NoArgsConstructor
+@Configuration
+@Import(OsaServerMongoConfiguration.class)
+public class OsaServerSecurityConfiguration {
+
+    public static final String ROLE_ADMIN = "ADMIN";
+
+    @Bean
+    @NonNull
+    public SecurityFilterChain osaServerSecurityFilterChain(@NonNull HttpSecurity httpSecurity) throws Exception {
+        httpSecurity.authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry.requestMatchers("/admin/**")
+                        .hasRole(ROLE_ADMIN)
+                        .requestMatchers("/private/**")
+                        .authenticated()
+                        .requestMatchers("/public/**")
+                        .permitAll()
+                        .requestMatchers("/anonymous/**")
+                        .anonymous()
+                        .requestMatchers("/error")
+                        .permitAll())
+                .httpBasic(Customizer.withDefaults())
+                .formLogin(Customizer.withDefaults())
+                .rememberMe(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable);
+
+        return httpSecurity.build();
     }
-}
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+    @Bean
+    @NonNull
+    public DaoUserDetailsService daoUserDetailsService(@NonNull UserDao userDao) {
+        return new DaoUserDetailsService(userDao);
     }
-}
 
-repositories {
-    mavenCentral()
-}
+    @Bean
+    @NonNull
+    public AuthenticationManager osaServerAuthenticationManager(@NonNull UserDetailsService userDetailsService,
+                                                                @NonNull PasswordEncoder passwordEncoder) {
+        var am = new DaoAuthenticationProvider(userDetailsService);
+        am.setPasswordEncoder(passwordEncoder);
+        return new ProviderManager(am);
+    }
 
-dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+    @Bean
+    @NonNull
+    public PasswordEncoder bcryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-test {
-    useJUnitPlatform()
 }

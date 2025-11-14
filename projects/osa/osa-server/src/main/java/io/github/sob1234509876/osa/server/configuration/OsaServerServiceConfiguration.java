@@ -622,44 +622,53 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
+package io.github.sob1234509876.osa.server.configuration;
 
-group = 'io.github.sob1234509876.osa'
-version = '2.0a'
-description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
+import io.github.sob1234509876.osa.server.api.AvatarDao;
+import io.github.sob1234509876.osa.server.api.UserDao;
+import io.github.sob1234509876.osa.server.service.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+@Slf4j
+@Data
+@NoArgsConstructor
+@Configuration
+@Import(OsaServerFtpConfiguration.class)
+public class OsaServerServiceConfiguration {
+
+    @Bean
+    @NonNull
+    public OsaServerCreateService osaServerCreateService(@NonNull UserDao userDao, @NonNull AvatarDao avatarDao,
+                                                         @NonNull OsaServerUtilityService osaServerUtilityService) {
+        return new OsaServerCreateService(userDao, avatarDao, osaServerUtilityService);
     }
-}
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+    @Bean
+    @NonNull
+    public OsaServerReadService osaServerReadService(@NonNull UserDao userDao, @NonNull AvatarDao avatarDao,
+                                                     @NonNull OsaServerUtilityService osaServerUtilityService) {
+        return new OsaServerReadService(userDao, avatarDao, osaServerUtilityService);
     }
-}
 
-repositories {
-    mavenCentral()
-}
+    @Bean
+    @NonNull
+    public OsaServerUpdateService osaServerUpdateService(@NonNull UserDao userDao, @NonNull AvatarDao avatarDao,
+                                                         @NonNull OsaServerUtilityService osaServerUtilityService,
+                                                         @NonNull PasswordEncoder passwordEncoder) {
+        return new OsaServerUpdateService(userDao, avatarDao, osaServerUtilityService, passwordEncoder);
+    }
 
-dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-test {
-    useJUnitPlatform()
+    @Bean
+    @NonNull
+    public OsaServerDeleteService osaServerDeleteService(@NonNull UserDao userDao, @NonNull AvatarDao avatarDao,
+                                                         @NonNull PasswordEncoder passwordEncoder) {
+        return new OsaServerDeleteService(userDao, avatarDao, passwordEncoder);
+    }
 }
