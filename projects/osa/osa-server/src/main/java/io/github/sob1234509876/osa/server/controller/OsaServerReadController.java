@@ -676,9 +676,4 @@ public class OsaServerReadController {
         return osaServerReadService.getAvatar(user);
     }
 
-    @PostConstruct
-    public void logCreation() {
-        log.info("Created {}", this);
-    }
-
 }

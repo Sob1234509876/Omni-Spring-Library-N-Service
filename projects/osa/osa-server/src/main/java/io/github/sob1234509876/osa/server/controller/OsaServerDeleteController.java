@@ -660,9 +660,4 @@ public class OsaServerDeleteController {
         return osaServerDeleteService.deleteAvatar(user);
     }
 
-    @PostConstruct
-    public void logCreation() {
-        log.info("Created {}", this);
-    }
-
 }

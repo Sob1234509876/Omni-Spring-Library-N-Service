@@ -16,6 +16,7 @@ module osl.projects.osa.server {
     requires osl.projects.osftp.library;
     requires spring.webmvc;
     requires jakarta.annotation;
+    requires org.slf4j;
 
     exports io.github.sob1234509876.osa.server.annotation;
     exports io.github.sob1234509876.osa.server.configuration;

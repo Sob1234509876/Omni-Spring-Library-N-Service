@@ -664,9 +664,4 @@ public class OsaServerUpdateController {
         return osaServerUpdateService.updateAvatar(user, avatar);
     }
 
-    @PostConstruct
-    public void logCreation() {
-        log.info("Created {}", this);
-    }
-
 }

@@ -6,6 +6,7 @@ module osl.projects.osftp.library {
     requires spring.beans;
     requires org.apache.commons.net;
     requires spring.core;
+    requires org.slf4j;
 
     exports io.github.sob1234509876.osftp;
     exports io.github.sob1234509876.osftp.annotation;
