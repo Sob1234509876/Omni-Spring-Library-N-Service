@@ -648,11 +648,11 @@ public class DaoUserDetailsService implements UserDetailsService {
     private UserDao userDao;
 
     @Override
-    public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
-        var tmp = userDao.findById(username);
+    public UserDetails loadUserByUsername(@NonNull String id) throws UsernameNotFoundException {
+        var tmp = userDao.findById(Long.valueOf(id));
         if (tmp.isPresent())
             return tmp.get();
-        throw new UsernameNotFoundException("Username \"" + username + "\" not found");
+        throw new UsernameNotFoundException("Username \"" + id + "\" not found");
     }
 
 }

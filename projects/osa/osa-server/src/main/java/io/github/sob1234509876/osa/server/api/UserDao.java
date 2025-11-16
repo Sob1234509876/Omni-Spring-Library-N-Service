@@ -629,5 +629,5 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @OsaServerSpringBootDoNotTouch
-public interface UserDao extends CrudRepository<UserDetails, String> {
+public interface UserDao extends CrudRepository<UserDetails, Long> {
 }

@@ -643,7 +643,8 @@ public class User implements UserDetails {
 
     public static final String ID_FIELD = "username";
 
-    private long creationTimeStamp;
+    @Id
+    private long id;
     private boolean accountNonExpired;
     private boolean accountNonLocked;
     private boolean credentialsNonExpired;
@@ -652,15 +653,14 @@ public class User implements UserDetails {
     private List<? extends GrantedAuthority> authorities;
     @NonNull
     private String password;
-    @Id
     @NonNull
     private String username;
 
     public User(@NonNull UserDetails user) {
-        setCreationTimeStamp(-1);
+        setId(-1);
 
         if (user instanceof User u)
-            setCreationTimeStamp(u.getCreationTimeStamp());
+            setId(u.getId());
 
         setAccountNonExpired(user.isAccountNonExpired());
         setAccountNonLocked(user.isAccountNonLocked());

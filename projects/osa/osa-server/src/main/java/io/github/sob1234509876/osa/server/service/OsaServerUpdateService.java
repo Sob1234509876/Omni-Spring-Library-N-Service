@@ -661,21 +661,21 @@ public class OsaServerUpdateService {
 
     @NonNull
     public ResponseEntity<Void> updateProfile(@NonNull UserDetails user, @NonNull StringUserSecurePair nUser) {
-        log.info("Tmp\n{}", nUser);
+        var tmp = new User(user);
 
         if (nUser.getBody()
                 .isUnsafe())
             return ResponseEntity.badRequest()
                     .build();
 
-        if (!passwordEncoder.matches(nUser.getPassword(), user.getPassword()))
+        if (!passwordEncoder.matches(nUser.getPassword(), tmp.getPassword()))
             return ResponseEntity.status(401)
                     .build();
 
-        osaServerUtilityService.toSafeUser(new User(user), nUser.getBody());
+        osaServerUtilityService.toSafeUser(tmp, nUser.getBody());
 
         // There are probably cocurrent problems, IDK how to fix
-        userDao.deleteById(user.getUsername());
+        userDao.deleteById(tmp.getId());
         userDao.save(nUser.getBody());
 
         return ResponseEntity.ok(null);
@@ -684,7 +684,9 @@ public class OsaServerUpdateService {
     // Copied from OsaServerCreateService, added some tweaks
     @NonNull
     public ResponseEntity<Void> updateAvatar(@NonNull UserDetails user, @NonNull MultipartFile avatar) throws IOException {
-        if (!avatarDao.existsById(user.getUsername()))
+        var tmp = new User(user);
+
+        if (!avatarDao.existsById(tmp.getId()))
             return ResponseEntity.notFound()
                     .build();
 
@@ -697,10 +699,11 @@ public class OsaServerUpdateService {
             return ResponseEntity.badRequest()
                     .build();
 
-        var tmp = new Avatar(user.getUsername());
-        tmp.setImage(avatar.getBytes());
+        var t = new Avatar();
+        t.setId(tmp.getId());
+        t.setImage(avatar.getBytes());
 
-        avatarDao.save(tmp);
+        avatarDao.save(t);
 
         return ResponseEntity.ok(null);
     }

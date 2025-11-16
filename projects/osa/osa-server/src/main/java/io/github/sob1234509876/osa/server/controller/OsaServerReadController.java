@@ -627,7 +627,6 @@ package io.github.sob1234509876.osa.server.controller;
 import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
 import io.github.sob1234509876.osa.server.api.User;
 import io.github.sob1234509876.osa.server.service.OsaServerReadService;
-import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -654,25 +653,25 @@ public class OsaServerReadController {
 
     @GetMapping("/public/profile")
     @NonNull
-    public ResponseEntity<@NonNull User> getProfile(@ModelAttribute("username") @NonNull String username) {
-        return osaServerReadService.getProfile(username);
+    public ResponseEntity<@NonNull User> getProfile(@ModelAttribute("id") long id) {
+        return osaServerReadService.getProfile(id);
     }
 
     @GetMapping("/public/avatar")
     @NonNull
-    public ResponseEntity<@NonNull Resource> getAvatar(@ModelAttribute("username") @NonNull String username) {
-        return osaServerReadService.getAvatar(username);
+    public ResponseEntity<@NonNull Resource> getAvatar(@ModelAttribute("username") long id) {
+        return osaServerReadService.getAvatar(id);
     }
 
     @GetMapping("/private/profile")
     @NonNull
-    public ResponseEntity<@NonNull User> getProfile(@AuthenticationPrincipal UserDetails user) {
+    public ResponseEntity<@NonNull User> getProfile(@AuthenticationPrincipal @NonNull UserDetails user) {
         return osaServerReadService.getProfile(user);
     }
 
     @GetMapping("/private/avatar")
     @NonNull
-    public ResponseEntity<@NonNull Resource> getAvatar(@AuthenticationPrincipal UserDetails user) {
+    public ResponseEntity<@NonNull Resource> getAvatar(@AuthenticationPrincipal @NonNull UserDetails user) {
         return osaServerReadService.getAvatar(user);
     }
 

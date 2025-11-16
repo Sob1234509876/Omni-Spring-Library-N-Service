@@ -666,12 +666,12 @@ public class OsaServerMongoUserDao implements UserDao {
     }
 
     @Override
-    public @NonNull Optional<UserDetails> findById(@NonNull String s) {
+    public @NonNull Optional<UserDetails> findById(@NonNull Long s) {
         return Optional.ofNullable(mongoTemplate.findById(s, User.class));
     }
 
     @Override
-    public boolean existsById(@NonNull String s) {
+    public boolean existsById(@NonNull Long s) {
         var query = Criteria.where(User.ID_FIELD)
                 .is(s);
 
@@ -685,7 +685,7 @@ public class OsaServerMongoUserDao implements UserDao {
     }
 
     @Override
-    public @NonNull Iterable<UserDetails> findAllById(@NonNull Iterable<String> strings) {
+    public @NonNull Iterable<UserDetails> findAllById(@NonNull Iterable<Long> strings) {
         var res = new LinkedList<UserDetails>();
 
         for (var s : strings) {
@@ -706,7 +706,7 @@ public class OsaServerMongoUserDao implements UserDao {
     }
 
     @Override
-    public void deleteById(@NonNull String s) {
+    public void deleteById(@NonNull Long s) {
         var query = Criteria.where(User.ID_FIELD)
                 .is(s);
 
@@ -719,7 +719,7 @@ public class OsaServerMongoUserDao implements UserDao {
     }
 
     @Override
-    public void deleteAllById(@NonNull Iterable<? extends String> strings) {
+    public void deleteAllById(@NonNull Iterable<? extends Long> strings) {
         for (var s : strings)
             deleteById(s);
     }

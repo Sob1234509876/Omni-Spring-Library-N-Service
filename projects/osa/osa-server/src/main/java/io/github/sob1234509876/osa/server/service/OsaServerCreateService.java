@@ -660,24 +660,22 @@ public class OsaServerCreateService {
     private OsaServerUtilityService osaServerUtilityService;
 
     @NonNull
-    public ResponseEntity<Void> register(@NonNull User user) {
+    public ResponseEntity<Long> register(@NonNull User user) {
         if (user.isUnsafe())
             return ResponseEntity.badRequest()
                     .build();
 
-        if (userDao.findById(user.getUsername()).isPresent())
-            return ResponseEntity.badRequest()
-                    .build();
-
-        osaServerUtilityService.toDefaultSafeUser(user);
+        osaServerUtilityService.initializeSafeUser(user);
         userDao.save(user);
 
-        return ResponseEntity.ok(null);
+        return ResponseEntity.ok(user.getId());
     }
 
     @NonNull
     public ResponseEntity<Void> uploadAvatar(@NonNull UserDetails user, @NonNull MultipartFile avatar) throws IOException {
-        if (avatarDao.existsById(user.getUsername()))
+        var tmp = new User(user);
+
+        if (avatarDao.existsById(tmp.getId()))
             return ResponseEntity.badRequest()
                     .build();
 
@@ -690,10 +688,11 @@ public class OsaServerCreateService {
             return ResponseEntity.badRequest()
                     .build();
 
-        var tmp = new Avatar(user.getUsername());
-        tmp.setImage(avatar.getBytes());
+        var t = new Avatar();
+        t.setId(tmp.getId());
+        t.setImage(avatar.getBytes());
 
-        avatarDao.save(tmp);
+        avatarDao.save(t);
 
         return ResponseEntity.ok(null);
     }

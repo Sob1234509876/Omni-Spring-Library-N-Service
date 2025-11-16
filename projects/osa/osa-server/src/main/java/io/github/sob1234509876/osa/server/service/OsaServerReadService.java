@@ -658,8 +658,8 @@ public class OsaServerReadService {
     private OsaServerUtilityService osaServerUtilityService;
 
     @NonNull
-    public ResponseEntity<@NonNull User> getProfile(@NonNull String username) {
-        var res = userDao.findById(username);
+    public ResponseEntity<@NonNull User> getProfile(long id) {
+        var res = userDao.findById(id);
 
         if (res.isEmpty())
             return ResponseEntity.notFound()
@@ -674,12 +674,12 @@ public class OsaServerReadService {
     }
 
     @NonNull
-    public ResponseEntity<@NonNull Resource> getAvatar(@NonNull String username) {
-        if (!avatarDao.existsById(username))
+    public ResponseEntity<@NonNull Resource> getAvatar(long id) {
+        if (!avatarDao.existsById(id))
             return ResponseEntity.notFound()
                     .build();
 
-        var res = avatarDao.findById(username);
+        var res = avatarDao.findById(id);
 
         if (res.isEmpty())
             return ResponseEntity.notFound()
@@ -695,12 +695,16 @@ public class OsaServerReadService {
 
     @NonNull
     public ResponseEntity<@NonNull User> getProfile(@NonNull UserDetails user) {
-        return getProfile(user.getUsername());
+        var tmp = new User(user);
+
+        return getProfile(tmp.getId());
     }
 
     @NonNull
     public ResponseEntity<@NonNull Resource> getAvatar(@NonNull UserDetails user) {
-        return getAvatar(user.getUsername());
+        var tmp = new User(user);
+
+        return getAvatar(tmp.getId());
     }
 
 }

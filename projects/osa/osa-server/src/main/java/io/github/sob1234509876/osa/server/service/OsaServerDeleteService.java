@@ -626,6 +626,7 @@ package io.github.sob1234509876.osa.server.service;
 
 import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
 import io.github.sob1234509876.osa.server.api.AvatarDao;
+import io.github.sob1234509876.osa.server.api.User;
 import io.github.sob1234509876.osa.server.api.UserDao;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -656,23 +657,27 @@ public class OsaServerDeleteService {
 
     @NonNull
     public ResponseEntity<Void> deleteProfile(@NonNull UserDetails user, @NonNull String password) {
+        var tmp = new User(user);
+
         if (!passwordEncoder.matches(password, user.getPassword()))
             return ResponseEntity.status(401)
                     .build();
 
-        deleteAvatar(user);
-        userDao.deleteById(user.getUsername());
+        deleteAvatar(tmp);
+        userDao.deleteById(tmp.getId());
 
         return ResponseEntity.ok(null);
     }
 
     @NonNull
     public ResponseEntity<Void> deleteAvatar(@NonNull UserDetails user) {
-        if (!avatarDao.existsById(user.getUsername()))
+        var tmp = new User(user);
+
+        if (!avatarDao.existsById(tmp.getId()))
             return ResponseEntity.badRequest()
                     .build();
 
-        avatarDao.deleteById(user.getUsername());
+        avatarDao.deleteById(tmp.getId());
 
         return ResponseEntity.ok(null);
     }

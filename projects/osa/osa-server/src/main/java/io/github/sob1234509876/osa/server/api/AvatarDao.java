@@ -628,5 +628,5 @@ import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTou
 import org.springframework.data.repository.CrudRepository;
 
 @OsaServerSpringBootDoNotTouch
-public interface AvatarDao extends CrudRepository<Avatar, String> {
+public interface AvatarDao extends CrudRepository<Avatar, Long> {
 }

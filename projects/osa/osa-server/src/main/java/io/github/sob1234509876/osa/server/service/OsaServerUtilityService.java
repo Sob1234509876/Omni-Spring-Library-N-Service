@@ -662,10 +662,10 @@ public class OsaServerUtilityService {
         user.setAccountNonExpired(original.isAccountNonExpired());
         user.setCredentialsNonExpired(original.isCredentialsNonExpired());
         user.setEnabled(original.isEnabled());
-        user.setCreationTimeStamp(original.getCreationTimeStamp());
+        user.setId(original.getId());
     }
 
-    public void toDefaultSafeUser(@NonNull User user) {
+    public void initializeSafeUser(@NonNull User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         user.setAuthorities(osaServerPropertyComponent.getDefaultGrantedAuthorities());
@@ -673,7 +673,7 @@ public class OsaServerUtilityService {
         user.setAccountNonExpired(true);
         user.setCredentialsNonExpired(true);
         user.setEnabled(true);
-        user.setCreationTimeStamp(System.currentTimeMillis());
+        user.setId(System.currentTimeMillis());
     }
 
     public void toSecureUser(@NonNull User user) {
@@ -682,16 +682,16 @@ public class OsaServerUtilityService {
     }
 
     // Random use of cache, I think string concat operations are inefficient, so I added this.
-    public String getAvatarFtpPath(@NonNull String username) {
-        if (avatarFtpPathCache.containsKey(username))
-            return avatarFtpPathCache.get(username);
+    public String getAvatarFtpPath(@NonNull String id) {
+        if (avatarFtpPathCache.containsKey(id))
+            return avatarFtpPathCache.get(id);
 
-        var tmp = newAvatarFtpPath(username);
-        avatarFtpPathCache.put(username, tmp);
+        var tmp = newAvatarFtpPath(id);
+        avatarFtpPathCache.put(id, tmp);
         return tmp;
     }
 
-    public String newAvatarFtpPath(@NonNull String username) {
-        return osaServerPropertyComponent.getAvatarFtpPathPrefix() + "/" + username;
+    public String newAvatarFtpPath(@NonNull String id) {
+        return osaServerPropertyComponent.getAvatarFtpPathPrefix() + "/" + id;
     }
 }

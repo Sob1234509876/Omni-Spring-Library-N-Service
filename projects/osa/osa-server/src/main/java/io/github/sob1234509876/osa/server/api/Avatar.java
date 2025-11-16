@@ -628,25 +628,22 @@ import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTou
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 
 @OsaServerSpringBootDoNotTouch
 @Data
 @NoArgsConstructor
-@RequiredArgsConstructor
 public class Avatar {
 
     private byte @NonNull [] image;
 
     @Id
-    @NonNull
-    private String username;
+    private long id;
 
     @SuppressWarnings({"ConstantValue",
             "unused"})
     public boolean isUnsafe() {
-        return getImage() == null || getUsername() == null;
+        return getImage() == null;
     }
 
 }
