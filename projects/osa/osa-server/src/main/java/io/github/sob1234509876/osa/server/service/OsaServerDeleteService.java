@@ -624,7 +624,6 @@
 
 package io.github.sob1234509876.osa.server.service;
 
-import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
 import io.github.sob1234509876.osa.server.api.AvatarDao;
 import io.github.sob1234509876.osa.server.api.User;
 import io.github.sob1234509876.osa.server.api.UserDao;
@@ -638,7 +637,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-@OsaServerSpringBootDoNotTouch
 @Slf4j
 @Data
 @NoArgsConstructor
@@ -661,6 +659,7 @@ public class OsaServerDeleteService {
 
         if (!passwordEncoder.matches(password, user.getPassword()))
             return ResponseEntity.status(401)
+                    .header("description","Wrong username or password")
                     .build();
 
         deleteAvatar(tmp);
@@ -675,6 +674,7 @@ public class OsaServerDeleteService {
 
         if (!avatarDao.existsById(tmp.getId()))
             return ResponseEntity.badRequest()
+                    .header("description","User doesn't exist")
                     .build();
 
         avatarDao.deleteById(tmp.getId());

@@ -624,13 +624,11 @@
 
 package io.github.sob1234509876.osa.server.api;
 
-import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.springframework.data.annotation.Id;
 
-@OsaServerSpringBootDoNotTouch
 @Data
 @NoArgsConstructor
 public class Avatar {

@@ -624,7 +624,6 @@
 
 package io.github.sob1234509876.osa.server.controller;
 
-import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
 import io.github.sob1234509876.osa.server.api.User;
 import io.github.sob1234509876.osa.server.service.OsaServerReadService;
 import lombok.Data;
@@ -640,7 +639,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RestController;
 
-@OsaServerSpringBootDoNotTouch
 @Slf4j
 @Data
 @NoArgsConstructor
@@ -659,7 +657,7 @@ public class OsaServerReadController {
 
     @GetMapping("/public/avatar")
     @NonNull
-    public ResponseEntity<@NonNull Resource> getAvatar(@ModelAttribute("username") long id) {
+    public ResponseEntity<@NonNull Resource> getAvatar(@ModelAttribute("id") long id) {
         return osaServerReadService.getAvatar(id);
     }
 

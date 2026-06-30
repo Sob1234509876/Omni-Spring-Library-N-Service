@@ -624,8 +624,14 @@
 
 package io.github.sob1234509876.osa.server.api;
 
-import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
+import lombok.NonNull;
 
-@OsaServerSpringBootDoNotTouch
 public class StringUserSecurePair extends SecurePair<String, User> {
+    public StringUserSecurePair() {
+    }
+
+    @SuppressWarnings("unused")
+    public StringUserSecurePair(@NonNull String password, @NonNull User body) {
+        super(password, body);
+    }
 }

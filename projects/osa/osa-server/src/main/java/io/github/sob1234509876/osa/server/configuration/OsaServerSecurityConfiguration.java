@@ -625,7 +625,9 @@
 package io.github.sob1234509876.osa.server.configuration;
 
 import io.github.sob1234509876.osa.server.api.UserDao;
+import io.github.sob1234509876.osa.server.component.OsaServerPropertyComponent;
 import io.github.sob1234509876.osa.server.security.DaoUserDetailsService;
+import io.github.sob1234509876.osa.server.security.filter.OsaServerJwtFilter;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -636,26 +638,31 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Slf4j
 @Data
 @NoArgsConstructor
 @Configuration
-@Import(OsaServerMongoConfiguration.class)
+@Import({OsaServerMongoConfiguration.class,
+        OsaServerServiceConfiguration.class})
 public class OsaServerSecurityConfiguration {
 
     public static final String ROLE_ADMIN = "ADMIN";
 
     @Bean
     @NonNull
-    public SecurityFilterChain osaServerSecurityFilterChain(@NonNull HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain osaServerSecurityFilterChain(@NonNull HttpSecurity httpSecurity, @NonNull OsaServerJwtFilter osaServerJwtFilter) throws Exception {
         httpSecurity.authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry.requestMatchers("/admin/**")
                         .hasRole(ROLE_ADMIN)
                         .requestMatchers("/private/**")
@@ -666,11 +673,22 @@ public class OsaServerSecurityConfiguration {
                         .anonymous()
                         .requestMatchers("/error")
                         .permitAll())
-                .httpBasic(Customizer.withDefaults())
-                .formLogin(Customizer.withDefaults())
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
                 .rememberMe(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable);
+                .cors(httpSecurityCorsConfigurer -> {
+                    var cfg = new CorsConfiguration();
+
+                    cfg.setAllowedMethods(List.of("GET", "POST", "DELETE", "PUT"));
+                    cfg.setAllowedOrigins(List.of("*"));
+
+                    var src = new UrlBasedCorsConfigurationSource();
+                    src.registerCorsConfiguration("/**", cfg);
+
+                    httpSecurityCorsConfigurer.configurationSource(src);
+                })
+                .addFilterBefore(osaServerJwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
     }
@@ -694,6 +712,13 @@ public class OsaServerSecurityConfiguration {
     @NonNull
     public PasswordEncoder bcryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    @NonNull
+    public OsaServerJwtFilter osaServerJwtFilter(@NonNull OsaServerPropertyComponent osaServerPropertyComponent,
+                                                 @NonNull UserDetailsService userDetailsService) {
+        return new OsaServerJwtFilter(osaServerPropertyComponent, userDetailsService);
     }
 
 }

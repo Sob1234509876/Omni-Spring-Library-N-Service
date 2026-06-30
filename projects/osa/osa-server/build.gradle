@@ -623,20 +623,22 @@
  */
 
 plugins {
-    id 'java'
+    id 'java-library'
     id 'org.springframework.boot' version '3.5.6'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.graalvm.buildtools.native' version '0.10.6'
+    id "de.jjohannes.extra-java-module-info" version "0.16"
 }
 
 group = 'io.github.sob1234509876.osa'
-version = '2.0a'
+version = '2.1a'
 description = 'Omni Spring Authorization Server gives a fast setup for user databases.'
 
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
+    modularity.inferModulePath = true
 }
 
 configurations {
@@ -650,15 +652,29 @@ repositories {
 }
 
 dependencies {
-    implementation project(':projects:osftp:osftp-library')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'commons-net:commons-net:3.9.0'
+    api project(':projects:osftp:osftp-library')
+    api 'org.springframework.boot:spring-boot-starter-web'
+    api 'org.springframework.boot:spring-boot-starter-security'
+    api 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+    api 'io.jsonwebtoken:jjwt:0.13.0'
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+extraJavaModuleInfo {
+    module('jjwt-api-0.13.0.jar','jjwt.api','0.13.0') {
+        exports('io.jsonwebtoken')
+        exports('io.jsonwebtoken.security')
+        exports('io.jsonwebtoken.io')
+        exports('io.jsonwebtoken.lang')
+    }
+    module('jjwt-0.13.0.jar','jjwt','0.13.0')
+    module('jjwt-jackson-0.13.0.jar','jjwt.jackson','0.13.0')
+    module('jjwt-impl-0.13.0.jar','jjwt.impl','0.13.0')
 }
 
 test {

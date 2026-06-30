@@ -622,31 +622,38 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-package io.github.sob1234509876.osa.client.configuration;
+package io.github.sob1234509876.osftp.component;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.JettyClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
+import io.github.sob1234509876.osftp.lbi.OsftpLibraryProperty;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
-@Configuration
-public class OsaClientRestConfiguration {
+@Slf4j
+@Data
+@NoArgsConstructor
+@ConfigurationProperties(prefix = "ftp")
+@Component
+public class OsftpLibraryPropertyComponent implements OsftpLibraryProperty {
+    private String host = "localhost";
 
-    @Value("${rest.username:}")
-    private String username;
+    private int port = 21;
 
-    @Value("${rest.password:}")
-    private String password;
+    private String username = "osftp";
 
-    @ConditionalOnMissingBean(RestTemplate.class)
-    @Bean
-    public RestTemplate defaultRestTemplate(RestTemplateBuilder restTemplateBuilder) {
-        restTemplateBuilder.requestFactory(JettyClientHttpRequestFactory.class);
-        if (!username.isBlank() && !password.isBlank())
-            restTemplateBuilder.basicAuthentication(username, password);
-        return restTemplateBuilder.build();
+    private String password = "123456";
+
+    private String basePath = "";
+
+    private int timeout = 20000;
+
+    private int heartbeat = 30000;
+
+    private boolean passiveMode = true;
+
+    {
+        log.info("Constructed {}", this);
     }
 }

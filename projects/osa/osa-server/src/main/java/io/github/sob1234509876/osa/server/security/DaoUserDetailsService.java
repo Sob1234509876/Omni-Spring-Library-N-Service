@@ -624,7 +624,6 @@
 
 package io.github.sob1234509876.osa.server.security;
 
-import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
 import io.github.sob1234509876.osa.server.api.UserDao;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -636,7 +635,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-@OsaServerSpringBootDoNotTouch
 @Slf4j
 @Data
 @NoArgsConstructor
@@ -650,6 +648,7 @@ public class DaoUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(@NonNull String id) throws UsernameNotFoundException {
         var tmp = userDao.findById(Long.valueOf(id));
+
         if (tmp.isPresent())
             return tmp.get();
         throw new UsernameNotFoundException("Username \"" + id + "\" not found");

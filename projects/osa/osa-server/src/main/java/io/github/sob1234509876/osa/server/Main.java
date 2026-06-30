@@ -624,7 +624,6 @@
 
 package io.github.sob1234509876.osa.server;
 
-import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -633,8 +632,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @Slf4j
 @SpringBootApplication(exclude = MongoRepositoriesAutoConfiguration.class)
-@ComponentScan(value = "io.github.sob1234509876.osa.server",
-        excludeFilters = @ComponentScan.Filter(OsaServerSpringBootDoNotTouch.class))
+@ComponentScan(value = "io.github.sob1234509876.osa.server.configuration")
 // Stop initializing the stuffs you do not know, ok?
 public class Main {
     public static void main(String[] args) {

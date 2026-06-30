@@ -624,7 +624,6 @@
 
 package io.github.sob1234509876.osa.server.service;
 
-import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
 import io.github.sob1234509876.osa.server.api.AvatarDao;
 import io.github.sob1234509876.osa.server.api.User;
 import io.github.sob1234509876.osa.server.api.UserDao;
@@ -640,7 +639,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-@OsaServerSpringBootDoNotTouch
 @Slf4j
 @Data
 @NoArgsConstructor
@@ -663,6 +661,7 @@ public class OsaServerReadService {
 
         if (res.isEmpty())
             return ResponseEntity.notFound()
+                    .header("description","User not found")
                     .build();
 
         var user = res.get();
@@ -683,6 +682,7 @@ public class OsaServerReadService {
 
         if (res.isEmpty())
             return ResponseEntity.notFound()
+                    .header("description","Avatar not found")
                     .build();
 
         var img = new ByteArrayResource(res.get()

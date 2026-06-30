@@ -1,6 +1,7 @@
 .gradle
 **/build
 **/plugins
+**/osa_generated_key.txt
 
 ### STS ###
 .apt_generated

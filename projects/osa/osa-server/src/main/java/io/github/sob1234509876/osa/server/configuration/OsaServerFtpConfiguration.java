@@ -627,7 +627,7 @@ package io.github.sob1234509876.osa.server.configuration;
 import io.github.sob1234509876.osa.server.component.OsaServerPropertyComponent;
 import io.github.sob1234509876.osa.server.dao.ftp.OsaServerFtpAvatarDao;
 import io.github.sob1234509876.osa.server.service.OsaServerUtilityService;
-import io.github.sob1234509876.osftp.configuration.OsftpDefaultFtpConfiguration;
+import io.github.sob1234509876.osftp.configuration.OsftpFtpConfiguration;
 import io.github.sob1234509876.osftp.dao.ftp.FtpTemplate;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -642,9 +642,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Data
 @NoArgsConstructor
 @Configuration
-@Import({OsaServerSecurityConfiguration.class,
-        OsaServerPropertyComponent.class,
-        OsftpDefaultFtpConfiguration.class})
+@Import({OsaServerPropertyComponent.class,
+        OsftpFtpConfiguration.class})
 public class OsaServerFtpConfiguration {
 
     @Bean

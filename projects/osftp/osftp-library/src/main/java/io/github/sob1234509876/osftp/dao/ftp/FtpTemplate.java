@@ -632,10 +632,9 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.springframework.lang.Nullable;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.util.Timer;
+import java.util.TimerTask;
 
 // Extremely inefficient
 @Slf4j
@@ -644,11 +643,31 @@ import java.io.OutputStream;
 @RequiredArgsConstructor
 public class FtpTemplate implements FtpOperations {
 
+    private static Timer HEARTBEAT = new Timer(true);
+
     @NonNull
     private FTPClient client;
 
     @NonNull
     private OsftpLibraryProperty config;
+
+    private boolean connected;
+
+    private TimerTask heartbeatTask = new TimerTask() {
+        @Override
+        public void run() {
+
+            if (!connected)
+                return;
+
+            try {
+                client.noop();
+                log.info("Beep");
+            } catch (@NonNull IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    };
 
     {
         log.info("Constructed {}", this);
@@ -659,73 +678,138 @@ public class FtpTemplate implements FtpOperations {
     @SneakyThrows
     @Override
     public void makeDirectories(@NonNull String path) {
-        client.changeWorkingDirectory("/");
-        for (var s : new FtpPath(path).getDir()) {
-            client.makeDirectory(s);
-            client.changeWorkingDirectory(s);
+        try {
+            connect();
+            client.changeWorkingDirectory("/");
+            for (var s : new FtpPath(path).getDir()) {
+                client.makeDirectory(s);
+                client.changeWorkingDirectory(s);
+            }
+        } catch (@NonNull Throwable t) {
+            disconnect();
+            throw new RuntimeException(t);
         }
     }
 
     @SneakyThrows
     @Override
     public void createFile(@NonNull String path) {
-        client.changeWorkingDirectory("/");
-        client.storeFile(path, InputStream.nullInputStream());
+        try {
+            connect();
+            client.changeWorkingDirectory("/");
+
+            client.storeFile(path, InputStream.nullInputStream());
+        } catch (@NonNull Throwable t) {
+            disconnect();
+            throw new RuntimeException(t);
+        }
     }
 
     @SneakyThrows
     @Override
     public byte @NonNull [] readFile(@NonNull String path) {
-        var buffer = new ByteArrayOutputStream();
-        readFile(path, buffer);
-        return buffer.toByteArray();
+        try {
+            connect();
+            var buffer = new ByteArrayOutputStream();
+            readFile(path, buffer);
+            return buffer.toByteArray();
+        } catch (@NonNull Throwable t) {
+            disconnect();
+            throw new RuntimeException(t);
+        }
     }
 
     @SneakyThrows
     @Override
     public void readFile(@NonNull String path, @NonNull OutputStream os) {
-        client.changeWorkingDirectory("/");
-        client.retrieveFile(path, os);
+        try {
+            connect();
+            client.changeWorkingDirectory("/");
+
+            client.retrieveFile(path, os);
+        } catch (@NonNull Throwable t) {
+            disconnect();
+            throw new RuntimeException(t);
+        }
     }
 
     @SneakyThrows
     @Override
     public @NonNull FTPFile @NonNull [] listFiles(@NonNull String path) {
-        client.changeWorkingDirectory("/");
-        return client.listFiles(path);
+        try {
+            connect();
+            client.changeWorkingDirectory("/");
+            return client.listFiles(path);
+        } catch (@NonNull Throwable t) {
+            disconnect();
+            throw new RuntimeException(t);
+        }
     }
 
     @SneakyThrows
     @Override
     public void writeFile(@NonNull String path, byte @NonNull [] data) {
-        writeFile(path, new ByteArrayInputStream(data));
+        try {
+            connect();
+            writeFile(path, new ByteArrayInputStream(data));
+        } catch (@NonNull Throwable t) {
+            disconnect();
+            throw new RuntimeException(t);
+        }
     }
 
     @SneakyThrows
     @Override
     public void writeFile(@NonNull String path, @NonNull InputStream is) {
-        client.changeWorkingDirectory("/");
-        client.storeFile(path, is);
+        try {
+            connect();
+            client.changeWorkingDirectory("/");
+
+            client.storeFile(path, is);
+
+        } catch (@NonNull Throwable t) {
+            disconnect();
+            throw new RuntimeException(t);
+        }
     }
 
     @SneakyThrows
     @Override
     public void appendFile(@NonNull String path, byte @NonNull [] data) {
-        appendFile(path, new ByteArrayInputStream(data));
+        try {
+            connect();
+            appendFile(path, new ByteArrayInputStream(data));
+        } catch (@NonNull Throwable t) {
+            disconnect();
+            throw new RuntimeException(t);
+        }
     }
 
     @SneakyThrows
     @Override
     public void appendFile(@NonNull String path, @NonNull InputStream is) {
-        client.changeWorkingDirectory("/");
-        client.appendFile(path, is);
+        try {
+            connect();
+            client.changeWorkingDirectory("/");
+
+            client.appendFile(path, is);
+        } catch (@NonNull Throwable t) {
+            disconnect();
+            throw new RuntimeException(t);
+        }
     }
 
     @SneakyThrows
     @Override
     public void deleteFile(@NonNull String path) {
-        client.changeWorkingDirectory("/");
-        client.deleteFile(path);
+        try {
+            connect();
+            client.changeWorkingDirectory("/");
+            client.deleteFile(path);
+        } catch (@NonNull Throwable t) {
+            disconnect();
+            throw new RuntimeException(t);
+        }
     }
 
     @Nullable
@@ -745,17 +829,42 @@ public class FtpTemplate implements FtpOperations {
 
     @Override
     public void destroy() throws Exception {
-        client.logout();
-        client.disconnect();
+        disconnect();
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        if (config.isPassiveMode())
-            client.enterLocalPassiveMode();
         client.setDefaultTimeout(config.getTimeout());
+        connect();
+        HEARTBEAT.scheduleAtFixedRate(heartbeatTask, 0, config.getHeartbeat());
+    }
+
+    private void connect() throws IOException {
+
+        if (connected)
+            return;
+
+
         client.connect(config.getHost(), config.getPort());
         client.login(config.getUsername(), config.getPassword());
+
         client.setFileType(FTP.BINARY_FILE_TYPE);
+
+        if (config.isPassiveMode())
+            client.enterLocalPassiveMode();
+
+        client.sendNoOp();
+
+        connected = true;
+    }
+
+    private void disconnect() throws IOException {
+
+        if (!connected)
+            return;
+
+        client.logout();
+        client.disconnect();
+        connected = false;
     }
 }

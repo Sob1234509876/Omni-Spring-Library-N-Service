@@ -622,17 +622,46 @@
  *                      END OF TERMS AND CONDITIONS
  */
 
-package io.github.sob1234509876.osftp.annotation;
+plugins {
+    id 'java-library'
+    id 'org.springframework.boot' version '3.5.6'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.graalvm.buildtools.native' version '0.10.6'
+}
 
-import io.github.sob1234509876.osftp.configuration.OsftpDefaultFtpConfiguration;
-import org.springframework.context.annotation.Import;
+group = 'io.github.sob1234509876.osc'
+version = '2.1a'
+description = 'Omni Spring Chat Server gives a fast setup for chatroom.'
 
-import java.lang.annotation.*;
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
-@Inherited
-@Documented
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Import(OsftpDefaultFtpConfiguration.class)
-public @interface EnableOsftpLibrary {
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api project(':projects:osftp:osftp-library'), project(':projects:osa:osa-server')
+    api 'org.springframework.boot:spring-boot-starter-web'
+    api 'org.springframework.boot:spring-boot-starter-security'
+    api 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    api 'org.springframework.boot:spring-boot-starter-data-websocket'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
 }

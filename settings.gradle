@@ -1,6 +1,7 @@
 rootProject.name = 'osl'
 
 include 'projects:osa:osa-server'
-include 'projects:osa:osa-client'
+
+include 'projects:osc:osc-server'
 
 include 'projects:osftp:osftp-library'

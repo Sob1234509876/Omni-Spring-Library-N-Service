@@ -624,7 +624,6 @@
 
 package io.github.sob1234509876.osa.server.service;
 
-import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
 import io.github.sob1234509876.osa.server.api.User;
 import io.github.sob1234509876.osa.server.component.OsaServerPropertyComponent;
 import lombok.Data;
@@ -638,7 +637,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.WeakHashMap;
 
-@OsaServerSpringBootDoNotTouch
 @Slf4j
 @Data
 @NoArgsConstructor

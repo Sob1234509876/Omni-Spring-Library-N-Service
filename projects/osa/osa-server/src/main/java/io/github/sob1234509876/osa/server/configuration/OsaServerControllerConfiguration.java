@@ -624,15 +624,9 @@
 
 package io.github.sob1234509876.osa.server.configuration;
 
-import io.github.sob1234509876.osa.server.controller.OsaServerCreateController;
-import io.github.sob1234509876.osa.server.controller.OsaServerDeleteController;
-import io.github.sob1234509876.osa.server.controller.OsaServerReadController;
-import io.github.sob1234509876.osa.server.controller.OsaServerUpdateController;
+import io.github.sob1234509876.osa.server.controller.*;
 import io.github.sob1234509876.osa.server.converter.StringToGrantedAuthorityConverter;
-import io.github.sob1234509876.osa.server.service.OsaServerCreateService;
-import io.github.sob1234509876.osa.server.service.OsaServerDeleteService;
-import io.github.sob1234509876.osa.server.service.OsaServerReadService;
-import io.github.sob1234509876.osa.server.service.OsaServerUpdateService;
+import io.github.sob1234509876.osa.server.service.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -642,6 +636,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Slf4j
@@ -675,8 +670,22 @@ public class OsaServerControllerConfiguration implements WebMvcConfigurer {
         return new OsaServerDeleteController(osaServerDeleteService);
     }
 
+    @Bean
+    @NonNull
+    public OsaServerLoginController osaServerLoginController(@NonNull OsaServerLoginService osaServerLoginService) {
+        return new OsaServerLoginController(osaServerLoginService);
+    }
+
     @Override
     public void addFormatters(@NonNull FormatterRegistry registry) {
         registry.addConverter((StringToGrantedAuthorityConverter) (SimpleGrantedAuthority::new));
+    }
+
+    @Override
+    public void addCorsMappings(@NonNull CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowCredentials(true)
+                .allowedOriginPatterns("*")
+                .allowedMethods("GET", "POST", "DELETE", "PUT");
     }
 }

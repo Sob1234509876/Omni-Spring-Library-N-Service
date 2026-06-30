@@ -635,5 +635,7 @@ public interface OsftpLibraryProperty {
 
     int getTimeout();
 
+    int getHeartbeat();
+
     boolean isPassiveMode();
 }

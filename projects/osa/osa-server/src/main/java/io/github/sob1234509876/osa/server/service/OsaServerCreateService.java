@@ -624,7 +624,6 @@
 
 package io.github.sob1234509876.osa.server.service;
 
-import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
 import io.github.sob1234509876.osa.server.api.Avatar;
 import io.github.sob1234509876.osa.server.api.AvatarDao;
 import io.github.sob1234509876.osa.server.api.User;
@@ -634,7 +633,6 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -642,7 +640,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-@OsaServerSpringBootDoNotTouch
 @Slf4j
 @Data
 @NoArgsConstructor
@@ -677,6 +674,7 @@ public class OsaServerCreateService {
 
         if (avatarDao.existsById(tmp.getId()))
             return ResponseEntity.badRequest()
+                    .header("description", "Avatar already exists")
                     .build();
 
         if (avatar.getContentType() == null)
@@ -684,8 +682,10 @@ public class OsaServerCreateService {
                     .build();
 
         // You actually could upload a txt file and state this is an image.
-        if (!MediaType.parseMediaType(avatar.getContentType()).isCompatibleWith(MediaType.IMAGE_PNG))
+        if (!avatar.getContentType()
+                .startsWith("image"))
             return ResponseEntity.badRequest()
+                    .header("description", "Bad content type")
                     .build();
 
         var t = new Avatar();

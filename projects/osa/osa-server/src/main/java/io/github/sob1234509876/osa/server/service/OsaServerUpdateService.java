@@ -624,7 +624,6 @@
 
 package io.github.sob1234509876.osa.server.service;
 
-import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
 import io.github.sob1234509876.osa.server.api.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -639,7 +638,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-@OsaServerSpringBootDoNotTouch
 @Slf4j
 @Data
 @NoArgsConstructor
@@ -666,15 +664,17 @@ public class OsaServerUpdateService {
         if (nUser.getBody()
                 .isUnsafe())
             return ResponseEntity.badRequest()
+                    .header("description","User data missing either username, password or authorities")
                     .build();
 
         if (!passwordEncoder.matches(nUser.getPassword(), tmp.getPassword()))
             return ResponseEntity.status(401)
+                    .header("description","Old password matches new password")
                     .build();
 
         osaServerUtilityService.toSafeUser(tmp, nUser.getBody());
 
-        // There are probably cocurrent problems, IDK how to fix
+        // There are probably concurrent problems, IDK how to fix
         userDao.deleteById(tmp.getId());
         userDao.save(nUser.getBody());
 
@@ -688,15 +688,18 @@ public class OsaServerUpdateService {
 
         if (!avatarDao.existsById(tmp.getId()))
             return ResponseEntity.notFound()
+                    .header("description","Avatar not found")
                     .build();
 
         if (avatar.getContentType() == null)
             return ResponseEntity.badRequest()
+                    .header("description","Avatar has no content type")
                     .build();
 
         if (!avatar.getContentType()
                 .startsWith("image"))
             return ResponseEntity.badRequest()
+                    .header("description","Avatar has a non image content type")
                     .build();
 
         var t = new Avatar();

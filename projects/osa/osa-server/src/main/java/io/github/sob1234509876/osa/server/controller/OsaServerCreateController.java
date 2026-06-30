@@ -624,7 +624,6 @@
 
 package io.github.sob1234509876.osa.server.controller;
 
-import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
 import io.github.sob1234509876.osa.server.api.User;
 import io.github.sob1234509876.osa.server.service.OsaServerCreateService;
 import lombok.Data;
@@ -642,7 +641,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-@OsaServerSpringBootDoNotTouch
 @Slf4j
 @Data
 @NoArgsConstructor

@@ -620,14 +620,162 @@
  * copy of the Program in return for a fee.
  *
  *                      END OF TERMS AND CONDITIONS
+ *
+ *             How to Apply These Terms to Your New Programs
+ *
+ *   If you develop a new program, and you want it to be of the greatest
+ * possible use to the public, the best way to achieve this is to make it
+ * free software which everyone can redistribute and change under these terms.
+ *
+ *   To do so, attach the following notices to the program.  It is safest
+ * to attach them to the start of each source file to most effectively
+ * state the exclusion of warranty; and each file should have at least
+ * the "copyright" line and a pointer to where the full notice is found.
+ *
+ *     <one line to give the program's name and a brief idea of what it does.>
+ *     Copyright (C) <year>  <name of author>
+ *
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * Also add information on how to contact you by electronic and paper mail.
+ *
+ *   If the program does terminal interaction, make it output a short
+ * notice like this when it starts in an interactive mode:
+ *
+ *     <program>  Copyright (C) <year>  <name of author>
+ *     This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+ *     This is free software, and you are welcome to redistribute it
+ *     under certain conditions; type `show c' for details.
+ *
+ * The hypothetical commands `show w' and `show c' should show the appropriate
+ * parts of the General Public License.  Of course, your program's commands
+ * might be different; for a GUI interface, you would use an "about box".
+ *
+ *   You should also get your employer (if you work as a programmer) or school,
+ * if any, to sign a "copyright disclaimer" for the program, if necessary.
+ * For more information on this, and how to apply and follow the GNU GPL, see
+ * <https://www.gnu.org/licenses/>.
+ *
+ *   The GNU General Public License does not permit incorporating your program
+ * into proprietary programs.  If your program is a subroutine library, you
+ * may consider it more useful to permit linking proprietary applications with
+ * the library.  If this is what you want to do, use the GNU Lesser General
+ * Public License instead of this License.  But first, please read
+ * <https://www.gnu.org/licenses/why-not-lgpl.html>.
+ *
  */
 
-package io.github.sob1234509876.osa.client.configuration;
+package io.github.sob1234509876.osa.server.security.filter;
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import io.github.sob1234509876.osa.server.component.OsaServerPropertyComponent;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-@Configuration
-@Import(OsaClientRestConfiguration.class)
-public class OsaClientConfiguration {
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+
+@Slf4j
+@EqualsAndHashCode(callSuper = true)
+@Data
+@NoArgsConstructor
+@RequiredArgsConstructor
+public class OsaServerJwtFilter extends OncePerRequestFilter {
+
+    public static final String AUTHENTICATION_HEADER = "Authorization";
+    public static final String BEARER_PREFIX = "Bearer ";
+
+    @NonNull
+    private OsaServerPropertyComponent osaServerPropertyComponent;
+
+    @NonNull
+    private UserDetailsService userDetailsService;
+
+    @Override
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+
+        if (SecurityContextHolder.getContext()
+                .getAuthentication() != null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        var auth = request.getHeader(AUTHENTICATION_HEADER);
+
+        if (auth == null || !auth.startsWith(BEARER_PREFIX)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        var token = auth.substring(BEARER_PREFIX.length());
+
+        Claims claims;
+        try {
+            claims = Jwts.parser()
+                    .verifyWith(Keys.hmacShaKeyFor(osaServerPropertyComponent.getJwtTokenSecret()
+                            .getBytes(StandardCharsets.UTF_8)))
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+        } catch (@NonNull Throwable t) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        var exp = claims.getExpiration();
+
+        if (exp == null || exp.before(new Date())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        var username = claims.getSubject();
+
+        if (username == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        UserDetails userDetails;
+        try {
+            userDetails = userDetailsService.loadUserByUsername(username);
+        } catch (@NonNull Throwable t) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        var authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+        SecurityContextHolder.getContext()
+                .setAuthentication(authToken);
+
+        filterChain.doFilter(request, response);
+    }
+
 }

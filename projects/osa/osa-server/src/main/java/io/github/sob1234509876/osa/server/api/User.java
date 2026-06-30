@@ -624,7 +624,6 @@
 
 package io.github.sob1234509876.osa.server.api;
 
-import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -635,13 +634,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 
-@OsaServerSpringBootDoNotTouch
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
 public class User implements UserDetails {
 
-    public static final String ID_FIELD = "username";
+    public static final String ID_FIELD = "id";
 
     @Id
     private long id;

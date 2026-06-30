@@ -15,10 +15,10 @@ module osl.projects.osa.server {
     requires spring.beans;
     requires osl.projects.osftp.library;
     requires spring.webmvc;
-    requires jakarta.annotation;
     requires org.slf4j;
+    requires org.apache.tomcat.embed.core;
+    requires jjwt.api;
 
-    exports io.github.sob1234509876.osa.server.annotation;
     exports io.github.sob1234509876.osa.server.configuration;
     exports io.github.sob1234509876.osa.server.component;
     exports io.github.sob1234509876.osa.server.security;
@@ -28,4 +28,5 @@ module osl.projects.osa.server {
     exports io.github.sob1234509876.osa.server.dao.ftp;
     exports io.github.sob1234509876.osa.server.dao.mongo;
     exports io.github.sob1234509876.osa.server.api;
+    exports io.github.sob1234509876.osa.server.security.filter;
 }

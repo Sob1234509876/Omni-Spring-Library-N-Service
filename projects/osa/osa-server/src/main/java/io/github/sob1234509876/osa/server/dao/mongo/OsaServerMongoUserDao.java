@@ -624,7 +624,6 @@
 
 package io.github.sob1234509876.osa.server.dao.mongo;
 
-import io.github.sob1234509876.osa.server.annotation.OsaServerSpringBootDoNotTouch;
 import io.github.sob1234509876.osa.server.api.User;
 import io.github.sob1234509876.osa.server.api.UserDao;
 import lombok.Data;
@@ -642,7 +641,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Optional;
 
-@OsaServerSpringBootDoNotTouch
 @Slf4j
 @Data
 @NoArgsConstructor
