@@ -643,7 +643,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @NoArgsConstructor
 @Configuration
 @Import({OsaServerPropertyComponent.class,
-        OsftpFtpConfiguration.class})
+        OsftpFtpConfiguration.class,
+        OsaServerSecurityMiscellaneousConfiguration.class})
 public class OsaServerFtpConfiguration {
 
     @Bean
@@ -656,8 +657,9 @@ public class OsaServerFtpConfiguration {
     @Bean
     @NonNull
     public OsaServerFtpAvatarDao avatarDao(@NonNull FtpTemplate ftpTemplate,
-                                           @NonNull OsaServerUtilityService osaServerUtilityService) {
-        return new OsaServerFtpAvatarDao(ftpTemplate, osaServerUtilityService);
+                                           @NonNull OsaServerUtilityService osaServerUtilityService,
+                                           @NonNull OsaServerPropertyComponent osaServerPropertyComponent) {
+        return new OsaServerFtpAvatarDao(ftpTemplate, osaServerUtilityService, osaServerPropertyComponent);
     }
 
 }

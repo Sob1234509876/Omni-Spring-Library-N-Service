@@ -641,7 +641,6 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -706,12 +705,6 @@ public class OsaServerSecurityConfiguration {
         var am = new DaoAuthenticationProvider(userDetailsService);
         am.setPasswordEncoder(passwordEncoder);
         return new ProviderManager(am);
-    }
-
-    @Bean
-    @NonNull
-    public PasswordEncoder bcryptPasswordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
     @Bean

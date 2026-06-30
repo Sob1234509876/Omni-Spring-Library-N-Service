@@ -626,6 +626,7 @@ package io.github.sob1234509876.osa.server.dao.ftp;
 
 import io.github.sob1234509876.osa.server.api.Avatar;
 import io.github.sob1234509876.osa.server.api.AvatarDao;
+import io.github.sob1234509876.osa.server.component.OsaServerPropertyComponent;
 import io.github.sob1234509876.osa.server.service.OsaServerUtilityService;
 import io.github.sob1234509876.osftp.dao.ftp.FtpTemplate;
 import lombok.Data;
@@ -652,6 +653,9 @@ public class OsaServerFtpAvatarDao implements AvatarDao, InitializingBean {
 
     @NonNull
     private OsaServerUtilityService osaServerUtilityService;
+
+    @NonNull
+    private OsaServerPropertyComponent osaServerPropertyComponent;
 
     @Override
     public <S extends Avatar> @NonNull S save(@NonNull S entity) {
@@ -691,8 +695,7 @@ public class OsaServerFtpAvatarDao implements AvatarDao, InitializingBean {
 
     @Override
     public @NonNull Iterable<Avatar> findAll() {
-        var path = osaServerUtilityService.getOsaServerPropertyComponent()
-                .getAvatarFtpPathPrefix();
+        var path = osaServerPropertyComponent.getAvatarFtpPathPrefix();
         var res = new LinkedList<Avatar>();
 
         for (var f : ftpTemplate.listFiles(path)) {
@@ -725,8 +728,7 @@ public class OsaServerFtpAvatarDao implements AvatarDao, InitializingBean {
 
     @Override
     public long count() {
-        var path = osaServerUtilityService.getOsaServerPropertyComponent()
-                .getAvatarFtpPathPrefix();
+        var path = osaServerPropertyComponent.getAvatarFtpPathPrefix();
         return ftpTemplate.listFiles(path).length;
     }
 
@@ -756,8 +758,7 @@ public class OsaServerFtpAvatarDao implements AvatarDao, InitializingBean {
 
     @Override
     public void deleteAll() {
-        var path = osaServerUtilityService.getOsaServerPropertyComponent()
-                .getAvatarFtpPathPrefix();
+        var path = osaServerPropertyComponent.getAvatarFtpPathPrefix();
         var files = ftpTemplate.listFiles(path);
 
         for (var f : files) {
@@ -768,7 +769,6 @@ public class OsaServerFtpAvatarDao implements AvatarDao, InitializingBean {
 
     @Override
     public void afterPropertiesSet() {
-        ftpTemplate.makeDirectories(osaServerUtilityService.getOsaServerPropertyComponent()
-                .getAvatarFtpPathPrefix());
+        ftpTemplate.makeDirectories(osaServerPropertyComponent.getAvatarFtpPathPrefix());
     }
 }
