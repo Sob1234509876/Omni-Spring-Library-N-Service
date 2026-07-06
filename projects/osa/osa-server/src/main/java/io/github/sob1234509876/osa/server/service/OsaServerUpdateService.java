@@ -664,12 +664,18 @@ public class OsaServerUpdateService {
         if (nUser.getBody()
                 .isUnsafe())
             return ResponseEntity.badRequest()
-                    .header("description","User data missing either username, password or authorities")
+                    .header("description", "User data missing either username, password or authorities")
+                    .build();
+
+        if (passwordEncoder.matches(nUser.getBody()
+                .getPassword(), tmp.getPassword()))
+            return ResponseEntity.status(401)
+                    .header("description", "Old password matches new password")
                     .build();
 
         if (!passwordEncoder.matches(nUser.getPassword(), tmp.getPassword()))
             return ResponseEntity.status(401)
-                    .header("description","Old password matches new password")
+                    .header("description", "Entered old password does not match the old password.")
                     .build();
 
         osaServerUtilityService.toSafeUser(tmp, nUser.getBody());
@@ -688,18 +694,18 @@ public class OsaServerUpdateService {
 
         if (!avatarDao.existsById(tmp.getId()))
             return ResponseEntity.notFound()
-                    .header("description","Avatar not found")
+                    .header("description", "Avatar not found")
                     .build();
 
         if (avatar.getContentType() == null)
             return ResponseEntity.badRequest()
-                    .header("description","Avatar has no content type")
+                    .header("description", "Avatar has no content type")
                     .build();
 
         if (!avatar.getContentType()
                 .startsWith("image"))
             return ResponseEntity.badRequest()
-                    .header("description","Avatar has a non image content type")
+                    .header("description", "Avatar has a non image content type")
                     .build();
 
         var t = new Avatar();

@@ -12,4 +12,4 @@ OSA is a simple authorization and user information database server. Implement to
 There is a BUG in the OSA-Server project, where one changes it's name will cause it's avatar data lose sync and couldn't be recognized by the FTP DAO
 
 ### Alpha 1.2
-Refactored a lot of stuffs and added JWT token to OSA-Server and removed HTTP Basic plus form login.
+Refactored a lot of stuffs and added JWT token to OSA-Server and removed HTTP Basic plus form login. Also added the client for OSA server (index: (host)/public/osa/index.html) from my repository called Clients.

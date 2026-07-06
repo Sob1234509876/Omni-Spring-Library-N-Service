@@ -635,6 +635,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -662,7 +663,9 @@ public class OsaServerSecurityConfiguration {
     @Bean
     @NonNull
     public SecurityFilterChain osaServerSecurityFilterChain(@NonNull HttpSecurity httpSecurity, @NonNull OsaServerJwtFilter osaServerJwtFilter) throws Exception {
-        httpSecurity.authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry.requestMatchers("/admin/**")
+        httpSecurity.authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry.requestMatchers(HttpMethod.OPTIONS, "/**")
+                        .permitAll()
+                        .requestMatchers("/admin/**")
                         .hasRole(ROLE_ADMIN)
                         .requestMatchers("/private/**")
                         .authenticated()
@@ -679,8 +682,9 @@ public class OsaServerSecurityConfiguration {
                 .cors(httpSecurityCorsConfigurer -> {
                     var cfg = new CorsConfiguration();
 
-                    cfg.setAllowedMethods(List.of("GET", "POST", "DELETE", "PUT"));
-                    cfg.setAllowedOrigins(List.of("*"));
+                    cfg.setAllowedMethods(List.of("GET", "POST", "DELETE", "PUT", "OPTIONS"));
+                    cfg.setAllowedOriginPatterns(List.of("*"));
+                    cfg.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 
                     var src = new UrlBasedCorsConfigurationSource();
                     src.registerCorsConfiguration("/**", cfg);
